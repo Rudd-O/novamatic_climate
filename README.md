@@ -13,6 +13,20 @@ number AR-715 (parts code IR30-0168CN---B), so check your
 A/C unit's remote — if it matches, this is for you: you got
 yourself a smart A/C unit now.
 
+## Will this work with my ESP device?
+
+Probably, so long as it has an infrared transmitter that can
+do 38 KHz.
+[This is the unit I got](https://de.aliexpress.com/item/1005001598129325.html).
+It works perfectly with the code as it ships.
+
+If your transmitter doesn't do 38 KHz by default, you may have
+to adjust the code to change the default frequency of your unit,
+as the code does not do this currently.  Right after
+`auto *data = transmit.get_data();` in `novamatic_climate.cpp`
+you may add `data->set_carrier_frequency(38000);` to achieve
+that effect.
+
 ## How do I program the circuit?
 
 Use your own version of this sample ESPHome sketch:

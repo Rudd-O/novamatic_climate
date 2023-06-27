@@ -476,29 +476,6 @@ namespace esphome
       auto p = esphome::remote_base::ProntoProtocol();
       p.encode(data, pronto);
       transmit.perform();
-
-      /*
-      auto transmit = this->transmitter_->transmit_pronto auto *data = transmit.get_data();
-
-      data->set_carrier_frequency(38000);
-      data->reserve(2 + BITS * 2u);
-
-      data->item(this->header_high_, this->header_low_);
-
-      for (uint32_t mask = 1UL << (BITS - 1); mask != 0; mask >>= 1)
-      {
-        if (value & mask)
-        {
-          data->item(this->bit_high_, this->bit_one_low_);
-        }
-        else
-        {
-          data->item(this->bit_high_, this->bit_zero_low_);
-        }
-      }
-      data->mark(this->bit_high_);
-      transmit.perform();
-      */
     }
 
   } // namespace novamatic_climate
