@@ -7,14 +7,6 @@ namespace esphome
   namespace novamatic_climate
   {
 
-    struct ModeSelector
-    {
-      esphome::climate::ClimateMode mode;
-      esphome::climate::ClimateFanMode fan_mode;
-      esphome::climate::ClimateSwingMode swing_mode;
-      float temp;
-    };
-
     static const char *const TAG = "climate.novamatic_climate";
     static const int CODE_LEN = 569;
     static const int CODE_TABLE_LEN = 125;
@@ -426,51 +418,53 @@ namespace esphome
       {
         fan_mode = this->fan_mode.value();
       }
-      ESP_LOGD(TAG, "Target temp: %.2f", this->target_temperature);
+      float clamped_temp = clamp<float>(this->target_temperature, TEMP_MIN, TEMP_MAX);
 
-      int offset;
-      bool data_found = false;
-
-      for (int i = 0; i < CODE_TABLE_LEN; i++)
+      for (int offset = 0; offset < CODE_TABLE_LEN; offset++)
       {
-        auto selector = MODES[i];
+        auto selector = MODES[offset];
         if (
-            (selector.mode == this->mode && selector.fan_mode == fan_mode && selector.swing_mode == this->swing_mode && this->target_temperature < selector.temp + 0.5) ||
+            (selector.mode == this->mode && selector.fan_mode == fan_mode && selector.swing_mode == this->swing_mode && clamped_temp < selector.temp + 0.5) ||
             (selector.mode == this->mode && selector.mode == esphome::climate::CLIMATE_MODE_OFF) ||
             (selector.mode == this->mode && selector.mode == esphome::climate::CLIMATE_MODE_FAN_ONLY && selector.swing_mode == this->swing_mode) ||
             (selector.mode == this->mode && selector.mode == esphome::climate::CLIMATE_MODE_DRY && selector.swing_mode == this->swing_mode))
         {
-          data_found = true;
-          offset = i;
+          ESP_LOGD(TAG, "Pronto code matches: %d", offset);
           ESP_LOGD(TAG, "  Mode: %d", selector.mode);
           ESP_LOGD(TAG, "  Fan mode: %d", selector.fan_mode);
           ESP_LOGD(TAG, "  Swing mode: %d", selector.swing_mode);
+          ESP_LOGD(TAG, "  Target temp: requested=%.1f clamped=%.1f selected=%.1f)", this->target_temperature, clamped_temp, selector.temp);
           ESP_LOGD(TAG, "  Temperature: %.2f", selector.temp);
-          ESP_LOGD(TAG, "  Offset of data: %d", offset);
-          break;
+          if (this->target_temperature != selector.temp)
+          {
+            ESP_LOGI(TAG, "Overriding target temperature to matched value of %.1f", selector.temp);
+          }
+          this->last_valid_selector = &selector;
+          char buffer[570];
+          char *copied = strcpy_P(buffer, (char *)pgm_read_dword(&(CODE_TABLE[offset])));
+          auto pronto = esphome::remote_base::ProntoData{std::string(buffer)};
+          this->transmit_(pronto);
+          return;
         }
       }
 
-      if (data_found)
+      ESP_LOGW(TAG, "No Pronto code to match:");
+      ESP_LOGW(TAG, "  Mode: %s (%d)", "unknown", this->mode);
+      ESP_LOGW(TAG, "  Swing mode: %s (%d)", "unknown", this->swing_mode);
+      ESP_LOGW(TAG, "  Fan mode: %s (%d)", "unknown", fan_mode);
+      ESP_LOGW(TAG, "  Target temp: requested=%.1f clamped=%.1f)", this->target_temperature, clamped_temp);
+      if (this->last_valid_selector != nullptr)
       {
-        char buffer[570];
-        char *copied = strcpy_P(buffer, (char *)pgm_read_dword(&(CODE_TABLE[offset])));
-        auto pronto = esphome::remote_base::ProntoData{std::string(buffer)};
-        this->transmit_(pronto);
-      }
-      else
-      {
-        ESP_LOGD(TAG, "Mode: %s (%d)", "unknown", this->mode);
-        ESP_LOGD(TAG, "Swing mode: %s (%d)", "unknown", this->swing_mode);
-        ESP_LOGD(TAG, "Fan mode: %s (%d)", "unknown", fan_mode);
-        ESP_LOGD(TAG, "Temperature: %.2f", this->target_temperature);
+        ESP_LOGW(TAG, "Restoring last selector values!");
+        this->swing_mode = this->last_valid_selector->swing_mode;
+        this->mode = this->last_valid_selector->mode;
+        this->fan_mode = this->last_valid_selector->fan_mode;
+        this->target_temperature = this->last_valid_selector->temp;
       }
     }
 
     void NovamaticClimate::transmit_(const struct esphome::remote_base::ProntoData pronto)
     {
-      ESP_LOGD(TAG, "Sending pronto code: %s", pronto.data.c_str());
-
       auto transmit = this->transmitter_->transmit();
       auto *data = transmit.get_data();
       auto p = esphome::remote_base::ProntoProtocol();

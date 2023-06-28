@@ -7,6 +7,13 @@ namespace esphome
 {
     namespace novamatic_climate
     {
+        struct ModeSelector
+        {
+            esphome::climate::ClimateMode mode;
+            esphome::climate::ClimateFanMode fan_mode;
+            esphome::climate::ClimateSwingMode swing_mode;
+            float temp;
+        };
 
         // Temperature
         const uint8_t TEMP_MIN = 16; // Celsius
@@ -28,6 +35,7 @@ namespace esphome
 
         private:
             void transmit_(const struct esphome::remote_base::ProntoData);
+            struct ModeSelector *last_valid_selector = nullptr;
         };
 
     } // namespace climate_ir_lg
