@@ -453,13 +453,18 @@ namespace esphome
       ESP_LOGW(TAG, "  Swing mode: %s (%d)", "unknown", this->swing_mode);
       ESP_LOGW(TAG, "  Fan mode: %s (%d)", "unknown", fan_mode);
       ESP_LOGW(TAG, "  Target temp: requested=%.1f clamped=%.1f)", this->target_temperature, clamped_temp);
+      this->last_valid_selector = nullptr;
+    }
+
+    void NovamaticClimate::publish_state()
+    {
       if (this->last_valid_selector != nullptr)
       {
-        ESP_LOGW(TAG, "Restoring last selector values!");
-        this->swing_mode = this->last_valid_selector->swing_mode;
-        this->mode = this->last_valid_selector->mode;
-        this->fan_mode = this->last_valid_selector->fan_mode;
-        this->target_temperature = this->last_valid_selector->temp;
+        esphome::climate::Climate::publish_state();
+      }
+      else
+      {
+        ESP_LOGW(TAG, "Not publishing an invalid state!");
       }
     }
 
