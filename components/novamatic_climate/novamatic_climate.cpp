@@ -1,6 +1,7 @@
 #include "novamatic_climate.h"
 #include "esphome/core/log.h"
 #include "esphome/components/remote_base/pronto_protocol.h"
+#include "esphome/components/climate_ir/climate_ir.h"
 
 namespace esphome
 {
@@ -395,19 +396,8 @@ namespace esphome
 
     esphome::climate::ClimateTraits NovamaticClimate::traits()
     {
-      auto traits = climate::ClimateTraits();
-      traits.set_supported_modes({climate::CLIMATE_MODE_OFF});
-      traits.add_supported_mode(climate::CLIMATE_MODE_COOL);
-      traits.add_supported_mode(climate::CLIMATE_MODE_DRY);
-      traits.add_supported_mode(climate::CLIMATE_MODE_FAN_ONLY);
-      traits.set_supports_current_temperature(false);
-      traits.set_supports_two_point_target_temperature(false);
-      traits.set_visual_min_temperature(this->minimum_temperature_);
-      traits.set_visual_max_temperature(this->maximum_temperature_);
-      traits.set_visual_temperature_step(this->temperature_step_);
-      traits.set_supported_fan_modes(this->fan_modes_);
-      traits.set_supported_swing_modes(this->swing_modes_);
-      traits.set_supported_presets(this->presets_);
+      auto traits = esphome::climate_ir::ClimateIR::traits();
+      traits.set_supported_modes({climate::CLIMATE_MODE_OFF, climate::CLIMATE_MODE_COOL, climate::CLIMATE_MODE_DRY, climate::CLIMATE_MODE_FAN_ONLY});
       return traits;
     }
 

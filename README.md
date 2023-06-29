@@ -106,3 +106,8 @@ sensor:
   update_interval: 10s
   entity_category: "diagnostic"
 ```
+
+## Notes
+
+The `supports_heat` and `supports_cool` configuration keys are
+wholly ignored and overridden by the code.
