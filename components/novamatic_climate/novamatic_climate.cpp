@@ -427,7 +427,7 @@ namespace esphome
           ESP_LOGD(TAG, "  Temperature: %.2f", selector.temp);
           if (this->target_temperature != selector.temp)
           {
-            ESP_LOGI(TAG, "Overriding target temperature to matched value of %.1f", selector.temp);
+            ESP_LOGI(TAG, "Overriding target temperature from %.1f to matched value of %.1f", this->target_temperature, selector.temp);
           }
           this->last_valid_selector = &selector;
           char buffer[570];
