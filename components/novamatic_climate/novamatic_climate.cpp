@@ -446,18 +446,6 @@ namespace esphome
       this->last_valid_selector = nullptr;
     }
 
-    void NovamaticClimate::publish_state()
-    {
-      if (this->last_valid_selector != nullptr)
-      {
-        esphome::climate::Climate::publish_state();
-      }
-      else
-      {
-        ESP_LOGW(TAG, "Not publishing an invalid state!");
-      }
-    }
-
     void NovamaticClimate::transmit_(const struct esphome::remote_base::ProntoData pronto)
     {
       auto transmit = this->transmitter_->transmit();

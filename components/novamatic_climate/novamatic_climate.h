@@ -27,7 +27,6 @@ namespace esphome
                                         {climate::CLIMATE_FAN_AUTO, climate::CLIMATE_FAN_LOW, climate::CLIMATE_FAN_MEDIUM,
                                          climate::CLIMATE_FAN_HIGH},
                                         {climate::CLIMATE_SWING_OFF, climate::CLIMATE_SWING_VERTICAL}) {}
-            void publish_state();
 
         protected:
             /// Transmit via IR the state of this climate controller.
