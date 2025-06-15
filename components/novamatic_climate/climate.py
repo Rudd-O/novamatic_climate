@@ -8,13 +8,8 @@ AUTO_LOAD = ["climate_ir", "remote_base"]
 novamatic_climate_ns = cg.esphome_ns.namespace("novamatic_climate")
 NovamaticClimate = novamatic_climate_ns.class_("NovamaticClimate", climate_ir.ClimateIR)
 
-CONFIG_SCHEMA = climate_ir.CLIMATE_IR_SCHEMA.extend(
-    {
-        cv.GenerateID(): cv.declare_id(NovamaticClimate),
-    }
-)
+CONFIG_SCHEMA = climate_ir.climate_ir_schema(NovamaticClimate)
 
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
-    await climate_ir.register_climate_ir(var, config)
+    await climate_ir.new_climate_ir(config)
